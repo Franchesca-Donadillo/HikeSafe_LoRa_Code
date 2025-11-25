@@ -4,6 +4,18 @@
     "slug": "hikesafe-react-native-fresh",
     "version": "1.0.0",
     "sdkVersion": "48.0.0",
-    "platforms": ["ios","android","web"]
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
+    "android": {
+      "package": "com.maimarie.hikesafereactnativefresh"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "01edf179-f170-4b15-85d9-0cb43ccbcdf3"
+      }
+    }
   }
 }
