@@ -1,14 +1,26 @@
 pluginManagement {
   def reactNativeGradlePlugin
   try {
-    reactNativeGradlePlugin = new File(
-      providers.exec {
-        workingDir(rootDir)
-        commandLine("node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })")
-      }.standardOutput.asText.get().trim()
-    ).getParentFile().absolutePath
+    def stdout = new ByteArrayOutputStream()
+    def stderr = new ByteArrayOutputStream()
+    def rc = exec {
+      workingDir(rootDir)
+      commandLine("node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })")
+      standardOutput = stdout
+      errorOutput = stderr
+      ignoreExitValue = true
+    }
+    def outText = stdout.toString().trim()
+    def errText = stderr.toString().trim()
+    if (rc.exitValue != 0 || outText == '') {
+      println "--- ERROR resolving @react-native/gradle-plugin via node ---"
+      println "exit:${rc.exitValue} stdout:\n" + outText
+      println "stderr:\n" + errText
+      throw new GradleException("Failed to resolve @react-native/gradle-plugin (see logs)")
+    }
+    reactNativeGradlePlugin = new File(outText).getParentFile().absolutePath
   } catch (Exception e) {
-    println "--- ERROR resolving @react-native/gradle-plugin via node ---"
+    println "--- ERROR resolving @react-native/gradle-plugin via node (catch) ---"
     println e.message
     throw new GradleException("Failed to resolve @react-native/gradle-plugin: " + e.message)
   }
@@ -16,15 +28,26 @@ pluginManagement {
   
   def expoPluginsPath
   try {
-    expoPluginsPath = new File(
-      providers.exec {
-        workingDir(rootDir)
-        commandLine("node", "--print", "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })")
-      }.standardOutput.asText.get().trim(),
-      "../android/expo-gradle-plugin"
-    ).absolutePath
+    def stdout2 = new ByteArrayOutputStream()
+    def stderr2 = new ByteArrayOutputStream()
+    def rc2 = exec {
+      workingDir(rootDir)
+      commandLine("node", "--print", "require.resolve('expo-modules-autolinking/package.json', { paths: [require.resolve('expo/package.json')] })")
+      standardOutput = stdout2
+      errorOutput = stderr2
+      ignoreExitValue = true
+    }
+    def outText2 = stdout2.toString().trim()
+    def errText2 = stderr2.toString().trim()
+    if (rc2.exitValue != 0 || outText2 == '') {
+      println "--- ERROR resolving expo-modules-autolinking via node ---"
+      println "exit:${rc2.exitValue} stdout:\n" + outText2
+      println "stderr:\n" + errText2
+      throw new GradleException("Failed to resolve expo-modules-autolinking (see logs)")
+    }
+    expoPluginsPath = new File(outText2, "../android/expo-gradle-plugin").absolutePath
   } catch (Exception e) {
-    println "--- ERROR resolving expo-modules-autolinking via node ---"
+    println "--- ERROR resolving expo-modules-autolinking via node (catch) ---"
     println e.message
     throw new GradleException("Failed to resolve expo-modules-autolinking: " + e.message)
   }
