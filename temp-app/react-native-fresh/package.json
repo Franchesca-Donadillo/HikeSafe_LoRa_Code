@@ -18,7 +18,6 @@
     "react-native-web": "0.18.10"
   },
   "devDependencies": {
-    "@babel/core": "^7.12.9",
-    "@react-native/gradle-plugin": "^0.82.1"
+    "@babel/core": "^7.12.9"
   }
 }

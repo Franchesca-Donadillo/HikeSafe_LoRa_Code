@@ -1,28 +1,18 @@
 pluginManagement {
   def reactNativeGradlePlugin
   try {
-    def stdout = new ByteArrayOutputStream()
-    def stderr = new ByteArrayOutputStream()
-    def rc = exec {
-      workingDir(rootDir)
-      commandLine("node", "--print", "require.resolve('@react-native/gradle-plugin/package.json', { paths: [require.resolve('react-native/package.json')] })")
-      standardOutput = stdout
-      errorOutput = stderr
-      ignoreExitValue = true
-    }
-    def outText = stdout.toString().trim()
-    def errText = stderr.toString().trim()
-    if (rc.exitValue != 0 || outText == '') {
-      println "--- ERROR resolving @react-native/gradle-plugin via node ---"
-      println "exit:${rc.exitValue} stdout:\n" + outText
-      println "stderr:\n" + errText
-      throw new GradleException("Failed to resolve @react-native/gradle-plugin (see logs)")
-    }
-    reactNativeGradlePlugin = new File(outText).getParentFile().absolutePath
+    // For RN 0.71.x, the gradle plugin is inside react-native/ReactAndroid
+    def rnRoot = new File(
+      providers.exec {
+        workingDir(rootDir)
+        commandLine("node", "--print", "require.resolve('react-native/package.json')")
+      }.standardOutput.asText.get().trim()
+    ).getParentFile()
+    reactNativeGradlePlugin = new File(rnRoot, "ReactAndroid").absolutePath
   } catch (Exception e) {
-    println "--- ERROR resolving @react-native/gradle-plugin via node (catch) ---"
+    println "--- ERROR resolving react-native gradle plugin ---"
     println e.message
-    throw new GradleException("Failed to resolve @react-native/gradle-plugin: " + e.message)
+    throw new GradleException("Failed to resolve react-native gradle plugin: " + e.message)
   }
   includeBuild(reactNativeGradlePlugin)
   
